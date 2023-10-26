@@ -38,7 +38,7 @@ archives:
       - LICENSE
 
 brews:
-  - tap:
+  - repository:
       owner: stenic
       name: homebrew-tap
     folder: Formula
@@ -51,13 +51,13 @@ brews:
     install: |-
       bin.install "{{ .ProjectName }}"
 
-scoop:
-  bucket:
-    owner: stenic
-    name: scoop-bucket
-  homepage: "{{ .Env.PROJECT_HOMEPAGE }}"
-  description: "{{ .Env.PROJECT_DESCRIPTION }}"
-  license: "{{ .Env.LICENSE }}"
+scoops:
+  - repository:
+      owner: stenic
+      name: scoop-bucket
+    homepage: "{{ .Env.PROJECT_HOMEPAGE }}"
+    description: "{{ .Env.PROJECT_DESCRIPTION }}"
+    license: "{{ .Env.LICENSE }}"
 
 # nfpms:
 #   - file_name_template: '{{ .ConventionalFileName }}'
