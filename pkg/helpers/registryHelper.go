@@ -120,10 +120,6 @@ func (h regHelper) imageMeta(img, tag string) (*imageMeta, error) {
 		return &meta, nil
 	}
 
-	// if meta, ok := h.cache[key]; ok {
-	// 	return &meta, nil
-	// }
-
 	manifest, err := h.hub.ManifestV2(img, tag)
 	if err != nil {
 		logrus.Warn(err)

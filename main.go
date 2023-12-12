@@ -146,6 +146,12 @@ func run() {
 	}
 
 	logrus.Infof("Found %d images to delete (%s) and %d to keep", len(toDelete), humanize.Bytes(total), len(toKeep)+filterCount)
+
+	if len(toDelete) == 0 {
+		logrus.Info("Nothing to delete")
+		return
+	}
+
 	if yolo && !ui.YesNo("We will delete all without asking, are you sure?") {
 		logrus.Fatal("Back to safety")
 	}
