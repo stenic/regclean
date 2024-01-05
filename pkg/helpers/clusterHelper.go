@@ -3,7 +3,7 @@ package helpers
 import (
 	"context"
 	"encoding/json"
-	"regclean/pkg/utils"
+	"github.com/stenic/regclean/pkg/utils"
 	"strings"
 
 	"github.com/sirupsen/logrus"

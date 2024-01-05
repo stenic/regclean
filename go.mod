@@ -1,4 +1,4 @@
-module regclean
+module github.com/stenic/regclean
 
 go 1.20
 

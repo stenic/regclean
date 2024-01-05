@@ -7,7 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"regclean/pkg/caching"
+	"github.com/stenic/regclean/pkg/caching"
 	"strings"
 	"time"
 
