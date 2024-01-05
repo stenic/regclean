@@ -34,6 +34,7 @@ func (h filterHelper) FilterImages(images []string) ([]string, int) {
 		"exclude_name": 0,
 		"include_name": 0,
 		"min_age":      0,
+		"error":        0,
 	}
 	logrus.WithFields(logrus.Fields{
 		"exclude_name": h.ExcludeNameFilters,
@@ -58,9 +59,14 @@ func (h filterHelper) FilterImages(images []string) ([]string, int) {
 		}
 
 		// Filter by minimum age
-		if created, err := h.rh.GetImageDate(image); err == nil && created.After(time.Now().AddDate(0, 0, -h.MinAge)) {
+		created, err := h.rh.GetImageDate(image)
+		if err == nil && created.After(time.Now().AddDate(0, 0, -h.MinAge)) {
 			logrus.Tracef("Image %s is younger than %d days, skipping", image, h.MinAge)
 			stats["min_age"]++
+			continue
+		} else if err != nil {
+			logrus.Tracef("Failed to get image date for %s, skipping", image)
+			stats["error"]++
 			continue
 		}
 		filtered = append(filtered, image)
@@ -70,6 +76,7 @@ func (h filterHelper) FilterImages(images []string) ([]string, int) {
 		"exclude_name": stats["exclude_name"],
 		"include_name": stats["include_name"],
 		"min_age":      stats["min_age"],
+        "error":        stats["error"],
 	}).Debug("Filter stats")
 
 	return filtered, len(images) - len(filtered)

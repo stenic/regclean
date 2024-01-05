@@ -26,6 +26,7 @@ var (
 	registryPassword   string
 	kubeconfig         string
 	v                  string
+	logCaller          bool
 	dryRun             bool
 	yolo               bool
 	minAge             int
@@ -52,6 +53,7 @@ func init() {
 	rootCmd.PersistentFlags().BoolVar(&dryRun, "dry-run", false, "Dry run")
 	rootCmd.PersistentFlags().BoolVar(&yolo, "yolo", false, "Don't ask for confirmation")
 	rootCmd.PersistentFlags().BoolVar(&aws, "aws", false, "Use AWS credentials for registry")
+	rootCmd.PersistentFlags().BoolVar(&logCaller, "log-caller", false, "Print caller in logs")
 	rootCmd.PersistentFlags().IntVar(&minAge, "min-age", 30, "Minimum age of images to delete")
 	rootCmd.PersistentFlags().StringVarP(&v, "verbosity", "v", logrus.DebugLevel.String(), "Log level (debug, info, warn, error, fatal, panic")
 	rootCmd.PersistentFlags().StringVar(&registryURL, "registry-url", os.Getenv("REGCLEAN_REGISTRY_URL"), "URL of the registry you would like to clean")
@@ -80,13 +82,16 @@ func setUpLogs(out io.Writer, level string) error {
 	if err != nil {
 		return err
 	}
+	if logCaller {
+		logrus.SetReportCaller(true)
+	}
 	logrus.SetLevel(lvl)
 	return nil
 }
 
 func run() {
 	clusterImages := []string{}
-	logrus.Info("Fetching images")
+	logrus.Infof("Fetching images from %d clusters", len(kubeContexts))
 	clusterHelper := helpers.NewClusterHelper(kubeconfig)
 
 	for _, kubeContext := range kubeContexts {
@@ -159,7 +164,7 @@ func run() {
 	for _, image := range toDelete {
 		if yolo || ui.YesNo(fmt.Sprintf("Delete %s?", image)) {
 			if err := regHelper.DeleteImage(image); err != nil {
-				logrus.Errorf("Failed to delete image: %s", err)
+                logrus.WithField("image", image).Errorf("Failed to delete image: %s", err)
 			}
 		}
 	}

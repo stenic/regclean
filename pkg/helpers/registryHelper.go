@@ -115,6 +115,9 @@ type imageMeta struct {
 }
 
 func (h regHelper) imageMeta(img, tag string) (*imageMeta, error) {
+    logFields := logrus.Fields{
+        "image": img + ":" + tag,
+    }
 	key := img + ":" + tag
 	if meta, err := h.cacheManager.Get(context.TODO(), key); err == nil {
 		return &meta, nil
@@ -122,24 +125,29 @@ func (h regHelper) imageMeta(img, tag string) (*imageMeta, error) {
 
 	manifest, err := h.hub.ManifestV2(img, tag)
 	if err != nil {
-		logrus.Warn(err)
+		logrus.WithFields(logFields).Warn(err)
 		return nil, err
 	}
+	logrus.WithFields(logFields).Tracef("response: %+v", manifest)
 
 	blob, err := h.hub.DownloadBlob(img, manifest.Config.Digest)
 	if err != nil {
-		logrus.Warn(err)
+		logrus.WithFields(logFields).Warn(err)
 		return nil, err
 	}
+	logrus.WithFields(logFields).Tracef("response: %+v", blob)
+
 	bytes, err := io.ReadAll(blob)
 	if err != nil {
-		logrus.Warn(err)
+		logrus.WithFields(logFields).Warn(err)
 		return nil, err
 	}
+	logrus.WithFields(logFields).Tracef("response: %+v", string(bytes))
+
 	var blobResp blobResponse
 	err = json.Unmarshal(bytes, &blobResp)
 	if err != nil {
-		logrus.Warn(err)
+		logrus.WithFields(logFields).Warn(err)
 		return nil, err
 	}
 
@@ -152,8 +160,10 @@ func (h regHelper) imageMeta(img, tag string) (*imageMeta, error) {
 		Created:   blobResp.Created,
 		TotalSize: total,
 	}
-	// h.cache[key] = meta
-	h.cacheManager.Set(context.Background(), key, meta)
+	if err := h.cacheManager.Set(context.Background(), key, meta); err != nil {
+		logrus.WithFields(logFields).Warn(err)
+	}
+
 	return &meta, nil
 }
 

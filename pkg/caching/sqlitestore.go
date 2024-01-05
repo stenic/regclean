@@ -40,7 +40,7 @@ func NewSQLLiteStore[T any]() store.StoreInterface {
 		needsInit = true
 	}
 
-	logrus.Debug("Opening cache database")
+	logrus.Trace("Opening cache database")
 
 	db, err := sqlx.Connect("sqlite3", dbFile)
 	if err != nil {
